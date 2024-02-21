@@ -1,26 +1,5 @@
-# import time 
-# import os
-
-# def countdown(t): 
-#     while t: 
-#         mins,secs  = divmod(t, 60)
-#         timer = '{:02d}:{:02d}'.format(mins, secs) 
-#         print(timer, end="\r") 
-#         time.sleep(1) 
-#         t -= 1
-#         dormiu(t)
-
-# def dormiu(t):
-#     if t == 0: 
-#         os.system("shutdown /s /t 1");
-
-
-# t = input("Insira o tempo em minutos: ") 
-# countdown(int(t) * 60)
-
-
-
-
+ import ctypes #biblioteca para criar caixa de texto 
+import threading #biblioteca para fazer a verificação se o input foi respondido em 15s
 from tkinter import *;
 import tkinter;   
  
@@ -38,10 +17,12 @@ window.resizable(width=FALSE, height=FALSE); #não permite que o tamanho da jane
 #definindo variaveis globais
 global time, rotate, counter, limiter;
 
-time = "00:00:00";
+time = "00:00";
 rotate =  FALSE;
 counter = 0;
-limiter = 59;
+limiter = 60;
+s = 0
+m = 0
 
 #função para dar inicio a funcao start
 def start_true():
@@ -55,7 +36,7 @@ def start_true():
 
 #função para iniciar
 def start():
-    global time, counter, limiter
+    global time, counter, limiter, rotate
 
     if rotate:
         if counter:
@@ -65,33 +46,56 @@ def start():
             #Rodando o cronometro
             label_time['font'] = 'Arial 50 bold'
             temporary = time;
-            h,m,s = map(int, temporary.split(":")); 
+            m,s = map(int, temporary.split(":")); 
             
             #passando os valores para inteiro para fazer a logica do timer
-            h = int(h);
+            # h = int(h);
             m = int(m);
             s += counter
         
-            if s >= limiter:
+            if s <= limiter:
                     m += s // limiter
                     s %= limiter
-                    if m >= limiter:
-                        h += m // limiter
+                    if m <= limiter:
+                        # h += m // limiter
                         m %= limiter
 
             s = str(0)+str(s)
             m = str(0)+str(m)
-            h = str(0)+str(h)
 
-            #atualizando os valores a cada vez que um numero é alterado
-            temporary = str(h[-2:])+":"+ str(m[-2:]) + ":" + str(s[-2:]);
+            temporary =   str(m[-2:]) + ":" + str(s[-2:]);
             label_time['text'] = temporary;
             time = temporary;
-        
 
+            zerou(m,s)
+ 
+            
         label_time.after(1000, start) #a cada um segundo, a função start é chamada para fazer a alteração do valor da label time
-        counter += 1;
-     
+        counter -= 1;
+        
+def zerou(m, s):
+    if m == "00" and s == "00":
+        print("Zerou")
+        esta_ai()
+             
+def Mbox(title, text, style):
+    MessageBox = ctypes.windll.user32.MessageBoxW
+    return MessageBox(None, text, title, style) 
+
+def esta_ai():
+
+    result = Mbox('Aviso', 'Tempo esgotado! Deseja continuar?', 4)
+    
+    if result == 6:
+        print("Usuário escolheu Sim")
+        pouse();
+        restart()
+        m = "00"
+        s = "00"
+    elif result == 7:
+        print("Usuário escolheu Não")
+        window.destroy()
+ 
 
 def pouse():
     global rotate;
@@ -101,20 +105,21 @@ def pouse():
 def restart():
     global time, counter;
     counter = 0
-    time = "00:00:00";
+    time = "00:00";
     label_time['text'] = time;
  
 
 
 
 #entrada do tempo
-input_time = Entry(window,width=13)
+input_time = Entry(window,width=13, justify='center')
 input_time.place(x = 110, y= 5);
+input_time.insert(0, '00:05')
  
 
 #criando labels ---------
 label_time = Label(window, text=time, fon=('Arial 50 bold'), bg=color1, fg=color2); #label para o titulo do timer, passando o nome, fonte, e cores de fundo e da fonte
-label_time.place(x=14, y=25) # passando a posição da label dentro da janela
+label_time.place(x=60, y=25) # passando a posição da label dentro da janela
 
 
 #criando botões ---------
