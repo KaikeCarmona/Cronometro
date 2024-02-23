@@ -1,139 +1,146 @@
- import ctypes #biblioteca para criar caixa de texto 
-import threading #biblioteca para fazer a verificação se o input foi respondido em 15s
-from tkinter import *;
-import tkinter;   
- 
-color1 = "#0a0a0a"; # black / preta
-color2 = "#fafcff"; # white / branca
- 
-#configurando a janela ---------
+import threading
+from tkinter import *
+import os
 
-window = Tk(); 
-window.title("Time to sleep"); #titulo da janela
-window.geometry('300x180'); #tamanho da janela
-window.configure(bg=color1); #cor de fundo 
-window.resizable(width=FALSE, height=FALSE); #não permite que o tamanho da janela seja alterado
+color1 = "#0a0a0a"  # preta
+color2 = "#fafcff"  # branca
 
-#definindo variaveis globais
-global time, rotate, counter, limiter;
+# Configurando a janela principal
+window = Tk()
+window.title("Time to sleep")
+window.geometry('300x180')
+window.configure(bg=color1)
+window.resizable(width=FALSE, height=FALSE)
 
-time = "00:00";
-rotate =  FALSE;
-counter = 0;
-limiter = 60;
+# Variáveis globais
+time = "00:00"
+rotate = False
+counter = 0
+limiter = 60
 s = 0
 m = 0
 
-#função para dar inicio a funcao start
+# Função para iniciar o cronômetro
 def start_true():
     global rotate
-    if not rotate:  # Verifica se o cronômetro não está em execução
+    if not rotate:
         rotate = True
         start()
-    else:
-        print("O cronômetro já está em execução!")
-    
 
-#função para iniciar
+# Função para iniciar o cronômetro
 def start():
     global time, counter, limiter, rotate
 
-    if rotate:
-        if counter:
+    if rotate and counter:
+        time = input_time.get()
 
-            time = input_time.get()
+        # Rodando o cronômetro
+        label_time['font'] = 'Arial 50 bold'
+        temporary = time
+        m, s = map(int, temporary.split(":"))
 
-            #Rodando o cronometro
-            label_time['font'] = 'Arial 50 bold'
-            temporary = time;
-            m,s = map(int, temporary.split(":")); 
-            
-            #passando os valores para inteiro para fazer a logica do timer
-            # h = int(h);
-            m = int(m);
-            s += counter
-        
-            if s <= limiter:
-                    m += s // limiter
-                    s %= limiter
-                    if m <= limiter:
-                        # h += m // limiter
-                        m %= limiter
+        m = int(m)
+        s += counter
 
-            s = str(0)+str(s)
-            m = str(0)+str(m)
+        if s <= limiter:
+            m += s // limiter
+            s %= limiter
+            if m <= limiter:
+                m %= limiter
 
-            temporary =   str(m[-2:]) + ":" + str(s[-2:]);
-            label_time['text'] = temporary;
-            time = temporary;
+        s = str(0) + str(s)
+        m = str(0) + str(m)
 
-            zerou(m,s)
- 
-            
-        label_time.after(1000, start) #a cada um segundo, a função start é chamada para fazer a alteração do valor da label time
-        counter -= 1;
-        
+        temporary = str(m[-2:]) + ":" + str(s[-2:])
+        label_time['text'] = temporary
+        time = temporary
+
+        zerou(m, s)
+
+    label_time.after(1000, start)
+    counter -= 1
+
+# Função chamada quando o tempo se esgota
 def zerou(m, s):
     if m == "00" and s == "00":
         print("Zerou")
-        esta_ai()
-             
-def Mbox(title, text, style):
-    MessageBox = ctypes.windll.user32.MessageBoxW
-    return MessageBox(None, text, title, style) 
+        show_confirmation_window()
 
-def esta_ai():
+        
+# Função para pausar o cronômetro
+def pause():
+    global rotate
+    rotate = False
 
-    result = Mbox('Aviso', 'Tempo esgotado! Deseja continuar?', 4)
-    
-    if result == 6:
-        print("Usuário escolheu Sim")
-        pouse();
-        restart()
-        m = "00"
-        s = "00"
-    elif result == 7:
-        print("Usuário escolheu Não")
-        window.destroy()
- 
-
-def pouse():
-    global rotate;
-    rotate = False;
-    
-
+# Função para reiniciar o cronômetro
 def restart():
-    global time, counter;
+    global time, counter
     counter = 0
-    time = "00:00";
-    label_time['text'] = time;
- 
+    time = "00:00"
+    label_time['text'] = time
+
+# Função para exibir a janela de confirmação
+def show_confirmation_window():
+    confirmation_window = Tk()
+    confirmation_window.title("Confirmação")
+    confirmation_window.geometry('300x100')
+    confirmation_window.configure(bg=color2)
+    confirmation_window.resizable(width=FALSE, height=FALSE)
+
+    # Função chamada ao clicar no botão "Sim"
+    def yes_action():
+        confirmation_window.destroy()
+        pause()
+        restart()
+
+    # Função chamada ao clicar no botão "Não"
+    def no_action():
+        confirmation_window.destroy()
+        window.destroy()
+
+    # Função para desligar o PC caso o usuario não selecione nenhuma opção
+    def desligar():
+        os.system("shutdown -s -t 1") 
+
+    # Label para exibir o tempo
+    label_in_out = Label(window, text=time, font=('Arial'), bg=color1, fg=color2)
+    label_in_out.place(x=60, y=25)
+
+    # Criação dos botões
+    yes_button = Button(confirmation_window, text="Sim", command=yes_action)
+    no_button = Button(confirmation_window, text="Não", command=no_action)
+
+    # Posicionamento dos botões
+
+    yes_button.grid(row=0, column=0, padx=10, pady=10)
+    no_button.grid(row=0, column=1, padx=10, pady=10)
+
+    confirmation_window.after(5000, desligar)  # Fecha a janela após 5 segundos
+
+    confirmation_window.mainloop() # Executa a janela
 
 
-
-#entrada do tempo
-input_time = Entry(window,width=13, justify='center')
-input_time.place(x = 110, y= 5);
+# Entrada para definir o tempo
+input_time = Entry(window, width=13, justify='center')
+input_time.place(x=110, y=5)
 input_time.insert(0, '00:05')
- 
 
-#criando labels ---------
-label_time = Label(window, text=time, fon=('Arial 50 bold'), bg=color1, fg=color2); #label para o titulo do timer, passando o nome, fonte, e cores de fundo e da fonte
-label_time.place(x=60, y=25) # passando a posição da label dentro da janela
+# Label para exibir o tempo
+label_time = Label(window, text=time, font=('Arial 50 bold'), bg=color1, fg=color2)
+label_time.place(x=60, y=25)
 
+# Botões para iniciar, pausar e reiniciar
+button_start = Button(window, command=start_true, text="Start", width=10, height=2, bg=color1, fg=color2,
+font=('ivy 8 bold'), relief='raised', overrelief='ridge')
+button_start.place(x=20, y=110)
 
-#criando botões ---------
-button_start = Button(window, command=start_true, text="Start", width=10, height=2, bg=color1, fg=color2, font=('ivy 8 bold'), relief='raised', overrelief='ridge');
-button_start.place(x = 20, y= 110);
+button_pause = Button(window, command=pause, text="Pause", width=10, height=2, bg=color1, fg=color2,
+font=('ivy 8 bold'), relief='raised', overrelief='ridge')
+button_pause.place(x=110, y=110)
 
-button_pouse = Button(window,command=pouse, text="Pause", width=10, height=2, bg=color1, fg=color2, font=('ivy 8 bold'), relief='raised', overrelief='ridge');
-button_pouse.place(x = 110, y= 110);
+button_restart = Button(window, command=restart, text="Restart", width=10, height=2, bg=color1, fg=color2,
+font=('ivy 8 bold'), relief='raised', overrelief='ridge')
+button_restart.place(x=200, y=110)
 
-button_restart = Button(window,command=restart, text="Restart", width=10, height=2, bg=color1, fg=color2, font=('ivy 8 bold'), relief='raised', overrelief='ridge');
-button_restart.place(x = 200, y= 110);
-
-window.mainloop();
-
-
-
-
+# Iniciando a aplicação
+window.mainloop()
