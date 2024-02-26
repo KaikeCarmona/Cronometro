@@ -15,50 +15,50 @@ window.resizable(width=FALSE, height=FALSE)
 # Variáveis globais
 time = "00:00"
 rotate = False
-counter = 0
+counter = 1
 limiter = 60
 s = 0
 m = 0
 
 # Função para iniciar o cronômetro
 def start_true():
-    global rotate
+    global rotate, counter
     if not rotate:
         rotate = True
         start()
-
 # Função para iniciar o cronômetro
 def start():
     global time, counter, limiter, rotate
 
-    if rotate and counter:
-        time = input_time.get()
+    if rotate:
+        if counter <= 0:
 
-        # Rodando o cronômetro
-        label_time['font'] = 'Arial 50 bold'
-        temporary = time
-        m, s = map(int, temporary.split(":"))
+            time = input_time.get()
+            # Rodando o cronômetro
+            label_time['font'] = 'Arial 50 bold'
+            temporary = time
+            m, s = map(int, temporary.split(":"))
 
-        m = int(m)
-        s += counter
+            m = int(m)
+            s += counter
 
-        if s <= limiter:
-            m += s // limiter
-            s %= limiter
-            if m <= limiter:
-                m %= limiter
+            if s <= limiter:
+                m += s // limiter
+                s %= limiter
+                if m <= limiter:
+                    m %= limiter
 
-        s = str(0) + str(s)
-        m = str(0) + str(m)
+            s = str(s).zfill(2)  # Garante que o segundo tenha dois dígitos
+            m = str(m).zfill(2)  # Garante que o minuto tenha dois dígitos
 
-        temporary = str(m[-2:]) + ":" + str(s[-2:])
-        label_time['text'] = temporary
-        time = temporary
+            temporary = str(m[-2:]) + ":" + str(s[-2:])
+            label_time['text'] = temporary
+            time = temporary
 
-        zerou(m, s)
+            zerou(m, s)
 
-    label_time.after(1000, start)
-    counter -= 1
+        label_time.after(1000, start)
+        counter -= 1
 
 # Função chamada quando o tempo se esgota
 def zerou(m, s):
@@ -78,7 +78,7 @@ def restart():
     counter = 0
     time = "00:00"
     label_time['text'] = time
-
+ 
 # Função para exibir a janela de confirmação
 def show_confirmation_window():
     confirmation_window = Tk()
@@ -102,18 +102,17 @@ def show_confirmation_window():
     def desligar():
         os.system("shutdown -s -t 1") 
 
-    # Label para exibir o tempo
-    label_in_out = Label(window, text=time, font=('Arial'), bg=color1, fg=color2)
-    label_in_out.place(x=60, y=25)
+     # Label para exibir a questão
+    label_confirmation_window = Label(confirmation_window, text="Ainda aind está ai?", font=('Arial 10 bold'), bg=color2, fg=color1)
+    label_confirmation_window.pack(pady=10)
 
     # Criação dos botões
-    yes_button = Button(confirmation_window, text="Sim", command=yes_action)
-    no_button = Button(confirmation_window, text="Não", command=no_action)
+    yes_button = Button(confirmation_window, text="Sim", command=yes_action, width=10)
+    no_button = Button(confirmation_window, text="Não", command=no_action, width=10)
 
     # Posicionamento dos botões
-
-    yes_button.grid(row=0, column=0, padx=10, pady=10)
-    no_button.grid(row=0, column=1, padx=10, pady=10)
+    yes_button.pack(side=LEFT, padx=20)
+    no_button.pack(side=RIGHT, padx=20)
 
     confirmation_window.after(5000, desligar)  # Fecha a janela após 5 segundos
 
@@ -123,7 +122,7 @@ def show_confirmation_window():
 # Entrada para definir o tempo
 input_time = Entry(window, width=13, justify='center')
 input_time.place(x=110, y=5)
-input_time.insert(0, '00:05')
+input_time.insert(0, '00:01')
 
 # Label para exibir o tempo
 label_time = Label(window, text=time, font=('Arial 50 bold'), bg=color1, fg=color2)
