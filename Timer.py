@@ -82,7 +82,6 @@ def restart():
 # Função para exibir a janela de confirmação
 def show_confirmation_window():
     confirmation_window = Tk()
-    confirmation_window.title("Confirmação")
     confirmation_window.geometry('300x100')
     confirmation_window.configure(bg=color2)
     confirmation_window.resizable(width=FALSE, height=FALSE)
